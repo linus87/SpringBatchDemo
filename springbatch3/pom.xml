@@ -16,9 +16,10 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.batch</groupId>
-			<artifactId>spring-batch-core</artifactId>
-			<version>3.0.8.RELEASE</version>
+			<!-- quick start, based on org.springframework.batch.spring-batch-core.3.0.8.RELEASE  -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-batch</artifactId>
+			<version>1.5.8.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

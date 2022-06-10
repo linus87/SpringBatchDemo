@@ -2,19 +2,17 @@ package com.linus.batch.springbatch3.configuration;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.linus.batch.components.tasklet.SleepTasklet;
+
 @Configuration
-public class BatchConfiguration {
+public class SampleJobsConfiguration {
 	@Autowired
 	private JobBuilderFactory jobBuilderFactory;
 
@@ -22,17 +20,8 @@ public class BatchConfiguration {
 	private StepBuilderFactory stepBuilderFactory;
 
 	@Bean
-	public Step step1() {
-		return stepBuilderFactory.get("step1").tasklet(new Tasklet() {
-			public RepeatStatus execute(StepContribution contribution,
-					ChunkContext chunkContext) {
-				return null;
-			}
-		}).build();
-	}
-
-	@Bean
-	public Job job(Step step1) throws Exception {
+	public Job job() throws Exception {
+	    Step step1 = stepBuilderFactory.get("step1").tasklet(new SleepTasklet()).build();
 		return jobBuilderFactory.get("job1")
 				.incrementer(new RunIdIncrementer()).start(step1).build();
 	}

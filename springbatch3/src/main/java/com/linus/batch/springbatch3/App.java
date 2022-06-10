@@ -4,18 +4,16 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import com.linus.batch.springbatch3.configuration.BatchConfiguration;
 
 /**
  * Hello world!
  * 
  */
-@EnableBatchProcessing
 @SpringBootApplication
 public class App {
 	public static void main(String[] args) {
 		System.out.println("Hello World!");
 		System.exit(SpringApplication.exit(SpringApplication.run(
-				BatchConfiguration.class, args)));
+		        App.class, args)));
 	}
 }

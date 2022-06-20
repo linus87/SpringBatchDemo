@@ -7,7 +7,7 @@ import org.springframework.batch.item.UnexpectedInputException;
 
 public class SampleReader implements ItemReader<String> {
     
-    private String[] datasource = {"Hello", "World"};
+    private String[] datasource = {"you", "are", "a", "kind", "man"};
     private int currentIndex = 0;
     
     public String read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {

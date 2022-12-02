@@ -10,9 +10,11 @@ public class SampleReader implements ItemReader<String> {
     private String[] datasource = {"you", "are", "a", "kind", "man"};
     private int currentIndex = 0;
     
-    public String read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
+    public synchronized String read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
         if (datasource.length > 0 && currentIndex < datasource.length) {
-            return datasource[currentIndex++];
+            String result = datasource[currentIndex++];
+            System.out.println(String.format("Thread %d: Reader: %s", Thread.currentThread().getId(), result));
+            return result;
         }
         
         return null;

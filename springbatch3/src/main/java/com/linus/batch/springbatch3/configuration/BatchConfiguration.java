@@ -6,6 +6,8 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @EnableBatchProcessing
 @Configuration
@@ -22,6 +24,14 @@ public class BatchConfiguration {
         dataSource.setUsername("sa");
         dataSource.setPassword("");
         return dataSource;
+    }
+    
+    @Bean
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor result = new ThreadPoolTaskExecutor();
+        result.setCorePoolSize(2);
+        
+        return result;
     }
 
 }

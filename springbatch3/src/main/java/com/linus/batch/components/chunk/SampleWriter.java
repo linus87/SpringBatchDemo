@@ -11,10 +11,10 @@ public class SampleWriter implements ItemWriter<String> {
     @Override
     public void write(Chunk<? extends String> chunk) throws Exception {
         for (String item : chunk) {
-            System.out.println(String.format("Thread %d: Writer: %s", Thread.currentThread().getId(), item));
-            if ("kind".equalsIgnoreCase(item)) {
-                throw new QueryTimeoutException("Timeout");
-            }
+            System.out.println(String.format("%s: Writer: %s", Thread.currentThread().getName(), item));
+//            if ("kind".equalsIgnoreCase(item)) {
+//                throw new QueryTimeoutException("Timeout");
+//            }
         }
     }
 }

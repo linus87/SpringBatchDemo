@@ -5,9 +5,10 @@ import java.util.Map;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.skip.LimitCheckingItemSkipPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -19,19 +20,16 @@ import com.linus.batch.components.chunk.SampleProcessor;
 import com.linus.batch.components.chunk.SampleReader;
 import com.linus.batch.components.chunk.SampleWriter;
 import com.linus.batch.components.tasklet.SleepTasklet;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 public class SampleJobsConfiguration {
-    @Autowired
-    private JobBuilderFactory jobBuilderFactory;
+    private JobRepository jobRepository;
+    private PlatformTransactionManager transactionManager;
 
-    @Autowired
-    private StepBuilderFactory stepBuilderFactory;
-    
-    
     @Bean
     public Job job(TaskExecutor taskExecutor) throws Exception {
-        Step step1 = stepBuilderFactory.get("step1").tasklet(new SleepTasklet()).build();
+        Step step1 = new StepBuilder("step1", jobRepository).tasklet(new SleepTasklet(), transactionManager).build();
 
         SampleReader reader = new SampleReader();
         SampleProcessor processor = new SampleProcessor();
@@ -39,12 +37,24 @@ public class SampleJobsConfiguration {
 
         Map<Class<? extends Throwable>, Boolean> skippableExceptions = new HashMap<Class<? extends Throwable>, Boolean>(1);
         skippableExceptions.put(QueryTimeoutException.class, true);
-        Step step2 = stepBuilderFactory.get("step2").<String, String>chunk(10).faultTolerant().skipPolicy(new LimitCheckingItemSkipPolicy(1, skippableExceptions)).reader(reader).processor(processor).writer(writer).taskExecutor(taskExecutor).throttleLimit(2)
+        Step step2 = new StepBuilder("step2", jobRepository).<String, String>chunk(10, transactionManager)
+                .faultTolerant().skipPolicy(new LimitCheckingItemSkipPolicy(1, skippableExceptions))
+                .reader(reader).processor(processor).writer(writer).taskExecutor(taskExecutor).throttleLimit(2)
                 .build();
         
 //        Step step2 = stepBuilderFactory.get("step2").<String, String>chunk(10).faultTolerant().reader(reader).processor(processor).writer(writer)
 //                .build();
         
-        return jobBuilderFactory.get("job1").incrementer(new RunIdIncrementer()).start(step1).next(step2).build();
+        return new JobBuilder("job1", jobRepository).incrementer(new RunIdIncrementer()).start(step1).next(step2).build();
+    }
+
+    @Autowired
+    public void setJobRepository(JobRepository jobRepository) {
+        this.jobRepository = jobRepository;
+    }
+
+    @Autowired
+    public void setTransactionManager(PlatformTransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
     }
 }

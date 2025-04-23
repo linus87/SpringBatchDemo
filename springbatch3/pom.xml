@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.linus.batch</groupId>
-    <artifactId>springbatch3</artifactId>
+    <artifactId>springbatch</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -20,12 +20,17 @@
             <!-- quick start, based on org.springframework.batch.spring-batch-core.3.0.8.RELEASE -->
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-batch</artifactId>
-            <version>1.5.8.RELEASE</version>
+            <version>3.3.6</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>4.3.29.RELEASE</version>
+            <version>6.1.15</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.12</version> <!-- Use the latest stable version -->
         </dependency>
         <dependency>
             <!-- used as the batch states datasource -->

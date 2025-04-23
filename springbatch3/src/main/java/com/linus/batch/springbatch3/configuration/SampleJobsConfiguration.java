@@ -20,6 +20,7 @@ import com.linus.batch.components.chunk.SampleProcessor;
 import com.linus.batch.components.chunk.SampleReader;
 import com.linus.batch.components.chunk.SampleWriter;
 import com.linus.batch.components.tasklet.SleepTasklet;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -28,7 +29,7 @@ public class SampleJobsConfiguration {
     private PlatformTransactionManager transactionManager;
 
     @Bean
-    public Job job(TaskExecutor taskExecutor) throws Exception {
+    public Job job() throws Exception {
         Step step1 = new StepBuilder("step1", jobRepository).tasklet(new SleepTasklet(), transactionManager).build();
 
         SampleReader reader = new SampleReader();
@@ -39,13 +40,23 @@ public class SampleJobsConfiguration {
         skippableExceptions.put(QueryTimeoutException.class, true);
         Step step2 = new StepBuilder("step2", jobRepository).<String, String>chunk(10, transactionManager)
                 .faultTolerant().skipPolicy(new LimitCheckingItemSkipPolicy(1, skippableExceptions))
-                .reader(reader).processor(processor).writer(writer).taskExecutor(taskExecutor).throttleLimit(2)
+                .reader(reader).processor(processor).writer(writer).taskExecutor(taskExecutor())
                 .build();
         
 //        Step step2 = stepBuilderFactory.get("step2").<String, String>chunk(10).faultTolerant().reader(reader).processor(processor).writer(writer)
 //                .build();
         
         return new JobBuilder("job1", jobRepository).incrementer(new RunIdIncrementer()).start(step1).next(step2).build();
+    }
+
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setCorePoolSize(2);
+        taskExecutor.setMaxPoolSize(2);
+        taskExecutor.setQueueCapacity(0);
+        taskExecutor.setThreadNamePrefix("taskExecutor-");
+        taskExecutor.initialize();
+        return taskExecutor;
     }
 
     @Autowired

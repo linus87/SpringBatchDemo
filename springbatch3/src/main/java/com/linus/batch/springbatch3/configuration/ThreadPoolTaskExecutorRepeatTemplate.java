@@ -11,6 +11,9 @@ import org.springframework.util.Assert;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
+/**
+ * Simplest implementation of {@link RepeatOperations} that uses a {@link ThreadPoolTaskExecutor} to execute
+ */
 public class ThreadPoolTaskExecutorRepeatTemplate implements RepeatOperations {
 
   private static final Logger log = LoggerFactory.getLogger(ThreadPoolTaskExecutorRepeatTemplate.class);

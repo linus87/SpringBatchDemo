@@ -36,12 +36,12 @@ public class SampleJobsConfiguration {
         SampleProcessor processor = new SampleProcessor();
         SampleWriter writer = new SampleWriter();
 
-        ThreadPoolTaskExecutorRepeatTemplate repeatTemplate = new ThreadPoolTaskExecutorRepeatTemplate();
+        TaskExecutorRepeatTemplateBasedOnRepeatTemplate repeatTemplate = new TaskExecutorRepeatTemplateBasedOnRepeatTemplate();
         repeatTemplate.setTaskExecutor(threadPoolTaskExecutor());
 
         Map<Class<? extends Throwable>, Boolean> skippableExceptions = new HashMap<Class<? extends Throwable>, Boolean>(1);
         skippableExceptions.put(QueryTimeoutException.class, true);
-        Step step2 = new StepBuilder("step2", jobRepository).<String, String>chunk(20, transactionManager)
+        Step step2 = new StepBuilder("step2", jobRepository).<String, String>chunk(10, transactionManager)
                 .faultTolerant().skipPolicy(new LimitCheckingItemSkipPolicy(1, skippableExceptions))
                 .reader(reader).processor(processor).writer(writer)
 //                .stepOperations(new RepeatTemplate())

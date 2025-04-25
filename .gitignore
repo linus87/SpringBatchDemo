@@ -1,3 +1,9 @@
 
 *.prefs
 springbatch3/.classpath
+/springbatch3/.idea/.gitignore
+/springbatch3/.idea/compiler.xml
+/springbatch3/.idea/encodings.xml
+/springbatch3/.idea/jarRepositories.xml
+/springbatch3/.idea/misc.xml
+/springbatch3/.idea/vcs.xml

@@ -5,19 +5,15 @@ import java.util.Map;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.skip.LimitCheckingItemSkipPolicy;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.dao.QueryTimeoutException;
 
 import com.linus.batch.components.chunk.SampleProcessor;
@@ -39,35 +35,41 @@ public class SampleJobsConfiguration {
         SampleReader reader = new SampleReader();
         SampleProcessor processor = new SampleProcessor();
         SampleWriter writer = new SampleWriter();
-        final ThreadPoolTaskExecutor taskExecutor = taskExecutor();
+
+        ThreadPoolTaskExecutorRepeatTemplate repeatTemplate = new ThreadPoolTaskExecutorRepeatTemplate();
+        repeatTemplate.setTaskExecutor(threadPoolTaskExecutor());
 
         Map<Class<? extends Throwable>, Boolean> skippableExceptions = new HashMap<Class<? extends Throwable>, Boolean>(1);
         skippableExceptions.put(QueryTimeoutException.class, true);
-        Step step2 = new StepBuilder("step2", jobRepository).<String, String>chunk(10, transactionManager)
+        Step step2 = new StepBuilder("step2", jobRepository).<String, String>chunk(20, transactionManager)
                 .faultTolerant().skipPolicy(new LimitCheckingItemSkipPolicy(1, skippableExceptions))
-                .reader(reader).processor(processor).writer(writer).taskExecutor(taskExecutor).throttleLimit(2)
+                .reader(reader).processor(processor).writer(writer)
+//                .stepOperations(new RepeatTemplate())
+//                .taskExecutor(threadPoolTaskExecutor())
+                .stepOperations(repeatTemplate)
                 .build();
 
-        Step step3 = new StepBuilder("step3", jobRepository).tasklet(new Tasklet(){
-            @Override
-            public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-                taskExecutor.stop();
-                return null;
-            }
-        }, transactionManager).build();
+        Step step3 = new StepBuilder("step3", jobRepository).tasklet(new SleepTasklet(), transactionManager).build();
         
         return new JobBuilder("job1", jobRepository).incrementer(new RunIdIncrementer()).start(step1).next(step2).next(step3).build();
     }
 
-    public ThreadPoolTaskExecutor taskExecutor() {
+    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setCorePoolSize(2);
-        taskExecutor.setMaxPoolSize(2);
+        taskExecutor.setCorePoolSize(20);
+        taskExecutor.setMaxPoolSize(20);
         taskExecutor.setQueueCapacity(0);
-        taskExecutor.setAwaitTerminationSeconds(2);
+//        taskExecutor.setAwaitTerminationSeconds(2);
         taskExecutor.setThreadNamePrefix("taskExecutor-");
         taskExecutor.initialize();
 
+        return taskExecutor;
+    }
+
+    public SimpleAsyncTaskExecutor simpleAsyncTaskExecutor() {
+        SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor();
+        taskExecutor.setConcurrencyLimit(20);
+        taskExecutor.setThreadNamePrefix("taskExecutor-");
         return taskExecutor;
     }
 

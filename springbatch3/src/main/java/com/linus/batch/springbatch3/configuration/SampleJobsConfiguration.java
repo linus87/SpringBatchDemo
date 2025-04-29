@@ -36,7 +36,7 @@ public class SampleJobsConfiguration {
         SampleProcessor processor = new SampleProcessor();
         SampleWriter writer = new SampleWriter();
 
-        TaskExecutorRepeatTemplateBasedOnRepeatTemplate repeatTemplate = new TaskExecutorRepeatTemplateBasedOnRepeatTemplate();
+        ThreadPoolTaskExecutorRepeatTemplate repeatTemplate = new ThreadPoolTaskExecutorRepeatTemplate();
         repeatTemplate.setTaskExecutor(threadPoolTaskExecutor());
 
         Map<Class<? extends Throwable>, Boolean> skippableExceptions = new HashMap<Class<? extends Throwable>, Boolean>(1);

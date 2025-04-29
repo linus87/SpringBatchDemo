@@ -8,7 +8,8 @@ public class SampleProcessor implements ItemProcessor<String, String> {
     public String process(String item) throws Exception {
         
         System.out.println(String.format("%s: Process: %s", Thread.currentThread().getName(), item));
-        
+
+        Thread.sleep(100);
 //        if ("a".equalsIgnoreCase(item) || "kind".equalsIgnoreCase(item)) {
 //            throw new QueryTimeoutException("Timeout");
 //        }

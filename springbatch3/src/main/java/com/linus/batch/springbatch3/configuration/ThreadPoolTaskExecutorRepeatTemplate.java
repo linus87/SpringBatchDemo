@@ -3,22 +3,19 @@ package com.linus.batch.springbatch3.configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.repeat.*;
-import org.springframework.batch.repeat.policy.DefaultResultCompletionPolicy;
 import org.springframework.batch.repeat.support.*;
-import org.springframework.core.task.TaskRejectedException;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.Assert;
 
-import java.util.concurrent.ThreadPoolExecutor;
-
 /**
- * Simplest implementation of {@link RepeatOperations} that uses a {@link ThreadPoolTaskExecutor} to execute
+ * ThreadPoolTaskExecutorRepeatTemplate without throttleLimit setting.
+ *
+ * @author linus.yan
+ * @since 2025-04-25
  */
-public class ThreadPoolTaskExecutorRepeatTemplate implements RepeatOperations {
+public class ThreadPoolTaskExecutorRepeatTemplate extends RepeatTemplate {
 
-  private static final Logger log = LoggerFactory.getLogger(ThreadPoolTaskExecutorRepeatTemplate.class);
-  private CompletionPolicy completionPolicy = new DefaultResultCompletionPolicy();
-
+  private static final Logger logger = LoggerFactory.getLogger(ThreadPoolTaskExecutorRepeatTemplate.class);
   private ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 
   // setter of taskExecutor
@@ -29,57 +26,90 @@ public class ThreadPoolTaskExecutorRepeatTemplate implements RepeatOperations {
 
   private RepeatStatus status = RepeatStatus.CONTINUABLE;
 
-  @Override
-  public RepeatStatus iterate(RepeatCallback callback) throws RepeatException {
-    RepeatContext outer = RepeatSynchronizationManager.getContext();
-    taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+  protected RepeatStatus getNextResult(RepeatContext context, RepeatCallback callback, RepeatInternalState state) throws Throwable {
+    RepeatStatusInternalState internalState = (RepeatStatusInternalState)state;
 
-    try {
-      do {
-        try {
-          // Check if the task executor is not full， if it is not full, then submit the task to the task executor
-          // If the task executor is full, then wait for a while and try again
-          if (this.taskExecutor.getActiveCount() < this.taskExecutor.getCorePoolSize()) {
-            this.taskExecutor.submit(new Runnable() {
-              @Override
-              public void run() {
-                RepeatStatus result = null;
-                try {
-                  result = callback.doInIteration(outer);
-                } catch (Exception e) {
-                  if (e instanceof RepeatException) {
-                    throw (RepeatException) e;
-                  } else {
-                    throw new RepeatException("Error in iteration", e);
-                  }
-                } finally {
-                  if (result == null) {
-                    result = RepeatStatus.FINISHED;
-                  }
-                }
-
-                if (result != null) {
-                  status = status.and(result.isContinuable());
-                }
-              }
-            });
-          }
-        } catch (TaskRejectedException e) {
-          // ignore TaskRejectedException
-        }
-      } while (!completionPolicy.isComplete(outer, status));
-    } finally {
-      RepeatSynchronizationManager.clear();
-      if (outer != null) {
-        RepeatSynchronizationManager.register(outer);
-      }
-    }
+    do {
+      ExecutingRunnable runnable = new ExecutingRunnable(callback, context, internalState);
+      this.taskExecutor.execute(runnable);
+      this.update(context);
+    } while(internalState.getStatus().isContinuable() && !this.isComplete(context));
 
     while (taskExecutor.getActiveCount() > 0) {
       // wait for all tasks to finish
     }
 
-    return status;
+    return internalState.getStatus();
   }
 
+  protected boolean waitForResults(RepeatInternalState state) {
+    return ((RepeatStatusInternalState) state).getStatus().isContinuable();
+  }
+
+  protected RepeatInternalState createInternalState(RepeatContext context) {
+    return new RepeatStatusInternalState();
+  }
+
+  private class ExecutingRunnable implements Runnable {
+    private final RepeatCallback callback;
+    private final RepeatContext context;
+    private volatile RepeatStatusInternalState internalState;
+    private volatile Throwable error;
+
+    public ExecutingRunnable(RepeatCallback callback, RepeatContext context, RepeatStatusInternalState internalState) {
+      this.callback = callback;
+      this.context = context;
+      this.internalState = internalState;
+    }
+
+    public void run() {
+      boolean clearContext = false;
+      RepeatStatus result = null;
+      try {
+        if (RepeatSynchronizationManager.getContext() == null) {
+          clearContext = true;
+          RepeatSynchronizationManager.register(this.context);
+        }
+
+        if (ThreadPoolTaskExecutorRepeatTemplate.this.logger.isDebugEnabled()) {
+          ThreadPoolTaskExecutorRepeatTemplate.this.logger.debug("Repeat operation about to start at count=" + this.context.getStartedCount());
+        }
+
+        result = callback.doInIteration(context);
+      } catch (Throwable e) {
+        this.error = e;
+      } finally {
+        if (result == null) {
+          result = RepeatStatus.FINISHED;
+        }
+
+        internalState.setStatus(status.and(result.isContinuable()));
+
+        if (clearContext) {
+          RepeatSynchronizationManager.clear();
+        }
+      }
+
+    }
+
+    public Throwable getError() {
+      return this.error;
+    }
+
+    public RepeatContext getContext() {
+      return this.context;
+    }
+  }
+
+  private static class RepeatStatusInternalState extends RepeatInternalStateSupport {
+    private RepeatStatus status = RepeatStatus.CONTINUABLE;
+
+    public void setStatus(RepeatStatus status) {
+      this.status = status;
+    }
+
+    public RepeatStatus getStatus() {
+      return status;
+    }
+  }
 }

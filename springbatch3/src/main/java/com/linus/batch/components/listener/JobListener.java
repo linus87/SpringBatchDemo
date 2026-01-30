@@ -1,6 +1,5 @@
 package com.linus.batch.components.listener;
 
-import com.linus.batch.components.chunk.SampleProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;

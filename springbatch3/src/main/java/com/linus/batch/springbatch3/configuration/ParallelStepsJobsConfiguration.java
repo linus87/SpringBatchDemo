@@ -1,8 +1,8 @@
 package com.linus.batch.springbatch3.configuration;
 
-import com.linus.batch.components.chunk.SampleProcessor;
-import com.linus.batch.components.chunk.SampleReader;
-import com.linus.batch.components.chunk.SampleWriter;
+import com.linus.batch.components.chunk.sample.SampleProcessor;
+import com.linus.batch.components.chunk.sample.SampleReader;
+import com.linus.batch.components.chunk.sample.SampleWriter;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.FlowBuilder;

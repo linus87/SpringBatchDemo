@@ -1,16 +1,11 @@
-package com.linus.batch.components.chunk;
-
-import java.util.List;
+package com.linus.batch.components.chunk.sample;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.annotation.AfterJob;
 import org.springframework.batch.core.annotation.AfterStep;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.dao.QueryTimeoutException;
 
 public class SampleWriter implements ItemWriter<String> {
   private final Logger log = LoggerFactory.getLogger(SampleProcessor.class);

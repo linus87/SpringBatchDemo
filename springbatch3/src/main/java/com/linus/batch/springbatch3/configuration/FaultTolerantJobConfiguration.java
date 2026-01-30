@@ -1,8 +1,8 @@
 package com.linus.batch.springbatch3.configuration;
 
-import com.linus.batch.components.chunk.SampleProcessor;
-import com.linus.batch.components.chunk.SampleReader;
-import com.linus.batch.components.chunk.SampleWriter;
+import com.linus.batch.components.chunk.sample.SampleProcessor;
+import com.linus.batch.components.chunk.sample.SampleReader;
+import com.linus.batch.components.chunk.sample.SampleWriter;
 import com.linus.batch.components.listener.JobListener;
 import com.linus.batch.components.tasklet.SleepTasklet;
 import org.springframework.batch.core.Job;
@@ -12,15 +12,11 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.skip.AlwaysSkipItemSkipPolicy;
-import org.springframework.batch.core.step.skip.LimitCheckingItemSkipPolicy;
-import org.springframework.batch.core.step.skip.NeverSkipItemSkipPolicy;
 import org.springframework.batch.repeat.support.RepeatTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.dao.QueryTimeoutException;
-import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;

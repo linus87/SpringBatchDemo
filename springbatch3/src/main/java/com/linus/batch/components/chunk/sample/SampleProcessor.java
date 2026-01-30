@@ -1,9 +1,8 @@
-package com.linus.batch.components.chunk;
+package com.linus.batch.components.chunk.sample;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.dao.QueryTimeoutException;
 
 public class SampleProcessor implements ItemProcessor<String, String> {
   private final Logger log = LoggerFactory.getLogger(SampleProcessor.class);

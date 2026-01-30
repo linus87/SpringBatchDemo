@@ -1,11 +1,8 @@
-package com.linus.batch.components.chunk;
+package com.linus.batch.components.chunk.sample;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.NonTransientResourceException;
-import org.springframework.batch.item.ParseException;
-import org.springframework.batch.item.UnexpectedInputException;
 
 public class SampleReader implements ItemReader<String> {
   private final Logger log = LoggerFactory.getLogger(SampleReader.class);

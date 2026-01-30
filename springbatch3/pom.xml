@@ -20,23 +20,23 @@
             <!-- quick start, based on org.springframework.batch.spring-batch-core.3.0.8.RELEASE -->
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-batch</artifactId>
-            <version>3.3.6</version>
+            <version>3.5.6</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>6.1.15</version>
+            <version>6.2.11</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.12</version> <!-- Use the latest stable version -->
+            <version>1.5.18</version> <!-- Use the latest stable version -->
         </dependency>
         <dependency>
             <!-- used as the batch states datasource -->
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>2.2.9</version>
+            <version>2.7.3</version>
         </dependency>
         <dependency>
             <groupId>commons-dbcp</groupId>

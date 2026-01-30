@@ -28,6 +28,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A job configuration that defines a fault-tolerant job with three steps.
+ * Fault tolerant can only run in single thread mode.
+ */
 @Configuration
 public class CampaignFaultTolerantJobConfiguration {
     private JobRepository jobRepository;
@@ -42,7 +46,6 @@ public class CampaignFaultTolerantJobConfiguration {
         CampaignWriter writer = new CampaignWriter();
 
         RepeatTemplate repeatTemplate = new RepeatTemplate();
-//        repeatTemplate.setTaskExecutor(threadPoolTaskExecutor());
 
         Map<Class<? extends Throwable>, Boolean> skippableExceptions = new HashMap<Class<? extends Throwable>, Boolean>(1);
         skippableExceptions.put(Exception.class, true);
@@ -54,7 +57,6 @@ public class CampaignFaultTolerantJobConfiguration {
                 .skipPolicy(new AlwaysSkipItemSkipPolicy())
                 .reader(reader).processor(processor).writer(writer)
                 .listener(writer)
-                .taskExecutor(threadPoolTaskExecutor())
                 .stepOperations(repeatTemplate)
                 .build();
 
@@ -63,25 +65,6 @@ public class CampaignFaultTolerantJobConfiguration {
         return new JobBuilder("campaignFaultTolerantJob", jobRepository)
                 .listener(new JobListener())
                 .incrementer(new RunIdIncrementer()).start(step1).next(step2).next(step3).build();
-    }
-
-    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
-        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setCorePoolSize(10);
-        taskExecutor.setMaxPoolSize(10);
-        taskExecutor.setQueueCapacity(0);
-//        taskExecutor.setAwaitTerminationSeconds(2);
-        taskExecutor.setThreadNamePrefix("taskExecutor-");
-        taskExecutor.initialize();
-
-        return taskExecutor;
-    }
-
-    public SimpleAsyncTaskExecutor simpleAsyncTaskExecutor() {
-        SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor();
-        taskExecutor.setConcurrencyLimit(20);
-        taskExecutor.setThreadNamePrefix("taskExecutor-");
-        return taskExecutor;
     }
 
     @Autowired
